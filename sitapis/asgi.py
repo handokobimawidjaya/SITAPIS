@@ -1,5 +1,5 @@
 """
-ASGI config for simonas project.
+ASGI config for sitapis project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'simonas.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sitapis.settings')
 
 application = get_asgi_application()

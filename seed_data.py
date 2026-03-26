@@ -6,7 +6,7 @@ Run with: python manage.py shell < seed_data.py
 import django
 import os
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'simonas.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sitapis.settings')
 django.setup()
 
 from apps.accounts.models import User

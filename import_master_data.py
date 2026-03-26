@@ -2,9 +2,9 @@
 Import script untuk data master dari file Excel.
 
 Menimport data dari 3 file:
-1. Data Master Jenis Naskah Dinas SIMONAS.xlsx → master_jenisnaskahdinas
-2. Data Master Klasifikasi Arsip SIMONAS.xlsx → master_klasifikasiarsip
-3. Data Master Unit Kerja SIMONAS.xlsx → master_unitkerja
+1. Data Master Jenis Naskah Dinas SITAPIS.xlsx → master_jenisnaskahdinas
+2. Data Master Klasifikasi Arsip SITAPIS.xlsx → master_klasifikasiarsip
+3. Data Master Unit Kerja SITAPIS.xlsx → master_unitkerja
 
 Run dengan: python3 import_master_data.py
 """
@@ -12,7 +12,7 @@ Run dengan: python3 import_master_data.py
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'simonas.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sitapis.settings')
 django.setup()
 
 import openpyxl

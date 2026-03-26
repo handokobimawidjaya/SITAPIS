@@ -9,7 +9,7 @@ DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'simonas_db',
+        'NAME': 'sitapis_db',
         'USER': 'odoo',
         'PASSWORD': 'odoo',
         'HOST': 'localhost',
