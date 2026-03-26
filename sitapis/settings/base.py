@@ -40,7 +40,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'simonas.urls'
+ROOT_URLCONF = 'sitapis.urls'
 
 TEMPLATES = [
     {
@@ -58,7 +58,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'simonas.wsgi.application'
+WSGI_APPLICATION = 'sitapis.wsgi.application'
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

@@ -54,7 +54,7 @@ mgr, created = User.objects.get_or_create(
     defaults={
         'first_name': 'Budi',
         'last_name': 'Manager',
-        'email': 'manager@simonas.local',
+        'email': 'manager@sitapis.local',
         'role': 'manager',
         'satker': kabupaten,
     },
@@ -70,7 +70,7 @@ stf, created = User.objects.get_or_create(
     defaults={
         'first_name': 'Siti',
         'last_name': 'Staff',
-        'email': 'staff@simonas.local',
+        'email': 'staff@sitapis.local',
         'role': 'staff',
         'satker': kabupaten,
     },
