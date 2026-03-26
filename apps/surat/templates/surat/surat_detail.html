@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}{{ surat.nomor_surat }} — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="breadcrumb" style="margin-bottom:4px;">
+            <a href="{% url 'surat:surat_list' %}">Daftar Surat</a> / Detail
+        </div>
+        <h1 style="display:flex;align-items:center;gap:12px;">
+            {{ surat.nomor_surat }}
+            <span class="badge {{ surat.status_color }}">{{ surat.get_status_display }}</span>
+        </h1>
+    </div>
+    <div style="display:flex;gap:8px;">
+        {% if surat.status == 'draft' %}
+        <a href="{% url 'surat:surat_update' surat.pk %}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
+        <button class="btn btn-warning" onclick="openModal('submitModal')"><i class="fas fa-paper-plane"></i>
+            Ajukan</button>
+        {% endif %}
+        {% if surat.status == 'submitted' and request.user.role != 'staff' %}
+        <button class="btn btn-success" onclick="openModal('approveModal')"><i class="fas fa-check"></i>
+            Setujui</button>
+        <button class="btn btn-danger" onclick="openModal('rejectModal')"><i class="fas fa-times"></i> Tolak</button>
+        {% endif %}
+        {% if surat.status == 'rejected' %}
+        <form method="post" action="{% url 'approval:revise' surat.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline"><i class="fas fa-redo"></i> Revisi (Kembali ke Draft)</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Detail Card -->
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-body">
+        <div class="detail-grid">
+            <div>
+                <div class="detail-field">
+                    <div class="field-label">Nomor Surat</div>
+                    <div class="field-value" style="font-size:1.1rem;font-weight:700;color:var(--clr-primary);">{{
+                        surat.nomor_surat }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Kategori</div>
+                    <div class="field-value">{{ surat.jenis_naskah.nama|default:"-" }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Perihal</div>
+                    <div class="field-value">{{ surat.perihal }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Tanggal Surat</div>
+                    <div class="field-value">{{ surat.tanggal|date:"d F Y" }}</div>
+                </div>
+            </div>
+            <div>
+                <div class="detail-field">
+                    <div class="field-label">Tujuan</div>
+                    <div class="field-value">{{ surat.tujuan|default:"-" }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Pengirim</div>
+                    <div class="field-value">{{ surat.pengirim|default:"-" }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Dibuat oleh</div>
+                    <div class="field-value">{{ surat.created_by.get_full_name|default:surat.created_by.username }}
+                    </div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Tanggal Dibuat</div>
+                    <div class="field-value">{{ surat.created_at|date:"d F Y, H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        {% if surat.notes %}
+        <div class="detail-field" style="margin-top:16px;">
+            <div class="field-label">Catatan</div>
+            <div class="field-value">{{ surat.notes|linebreaksbr }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Attachments -->
+{% if attachments %}
+<div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+        <h2><i class="fas fa-paperclip" style="color:var(--clr-text-muted);"></i> Lampiran ({{ attachments|length }})
+        </h2>
+    </div>
+    <div class="card-body" style="padding:12px 24px;">
+        <ul class="attachment-list">
+            {% for att in attachments %}
+            <li class="attachment-item">
+                <div class="file-info">
+                    <i class="fas fa-file"></i>
+                    <a href="{{ att.file.url }}" target="_blank">{{ att.filename }}</a>
+                </div>
+                <span style="font-size:0.75rem;color:var(--clr-text-muted);">{{ att.uploaded_at|date:"d/m/Y H:i"
+                    }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- Approval History -->
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-history" style="color:var(--clr-text-muted);"></i> Riwayat Approval</h2>
+    </div>
+    <div class="card-body">
+        {% if history %}
+        <div class="timeline">
+            {% for h in history %}
+            <div class="timeline-item {{ h.action }}">
+                <div class="timeline-content">
+                    <strong>{{ h.get_action_display }}</strong> oleh {{ h.user.get_full_name|default:h.user.username }}
+                    {% if h.comment %}<p style="margin-top:4px;color:var(--clr-text-muted);font-size:0.8125rem;">{{
+                        h.comment }}</p>{% endif %}
+                    <div class="timeline-meta">{{ h.timestamp|date:"d F Y, H:i" }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:1.5rem;">
+            <i class="fas fa-history"></i>
+            <p>Belum ada riwayat approval.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Submit Modal -->
+<div class="modal-overlay" id="submitModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Ajukan Surat</h3>
+            <button class="modal-close" onclick="closeModal('submitModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{% url 'approval:submit' surat.pk %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p style="margin-bottom:16px;">Surat akan diajukan untuk di-approve oleh Manager.</p>
+                <div class="form-group">
+                    <label>Komentar (opsional)</label>
+                    <textarea name="comment" class="form-input" rows="3" placeholder="Tambahkan komentar..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('submitModal')">Batal</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Ajukan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal-overlay" id="approveModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Setujui Surat</h3>
+            <button class="modal-close" onclick="closeModal('approveModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{% url 'approval:approve' surat.pk %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p style="margin-bottom:16px;">Apakah Anda yakin ingin menyetujui surat <strong>{{ surat.nomor_surat
+                        }}</strong>?</p>
+                <div class="form-group">
+                    <label>Komentar (opsional)</label>
+                    <textarea name="comment" class="form-input" rows="3" placeholder="Tambahkan komentar..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('approveModal')">Batal</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Setujui</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Tolak Surat</h3>
+            <button class="modal-close" onclick="closeModal('rejectModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{% url 'approval:reject' surat.pk %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p style="margin-bottom:16px;">Apakah Anda yakin ingin menolak surat <strong>{{ surat.nomor_surat
+                        }}</strong>?</p>
+                <div class="form-group">
+                    <label>Alasan Penolakan <span style="color:var(--clr-danger);">*</span></label>
+                    <textarea name="comment" class="form-input" rows="3" placeholder="Wajib diisi..."
+                        required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('rejectModal')">Batal</button>
+                <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Tolak</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

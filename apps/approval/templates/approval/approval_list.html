@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Approval — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Menunggu Approval</h1>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nomor Surat</th>
+                    <th>Perihal</th>
+                    <th>Kategori</th>
+                    <th>Tanggal</th>
+                    <th>Diajukan oleh</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in pending %}
+                <tr>
+                    <td><a href="{% url 'surat:surat_detail' s.pk %}" style="font-weight:600;">{{ s.nomor_surat }}</a>
+                    </td>
+                    <td>{{ s.perihal|truncatechars:50 }}</td>
+                    <td>{{ s.jenis_naskah.nama|default:"-" }}</td>
+                    <td>{{ s.tanggal|date:"d M Y" }}</td>
+                    <td>{{ s.created_by.get_full_name|default:s.created_by.username }}</td>
+                    <td>
+                        <a href="{% url 'surat:surat_detail' s.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> Review
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="fas fa-check-double"></i>
+                            <h3>Semua beres!</h3>
+                            <p>Tidak ada surat yang menunggu approval.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

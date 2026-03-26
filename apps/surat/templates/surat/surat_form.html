@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="card" style="max-width:720px;">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+
+            <!-- File Attachments -->
+            <div class="form-group">
+                <label><i class="fas fa-paperclip"></i> Lampiran</label>
+                <input type="file" name="attachments" class="form-input" multiple accept=".pdf">
+                <div class="form-help">Pastikan file berformat PDF</div>
+            </div>
+
+            {% if attachments %}
+            <div class="form-group">
+                <label>File Terlampir:</label>
+                <ul class="attachment-list">
+                    {% for att in attachments %}
+                    <li class="attachment-item">
+                        <div class="file-info">
+                            <i class="fas fa-file"></i>
+                            <a href="{{ att.file.url }}" target="_blank">{{ att.filename }}</a>
+                        </div>
+                        <form method="post" action="{% url 'surat:attachment_delete' att.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--clr-danger);" onclick="return confirm('Hapus lampiran ini?')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+                <a href="{% url 'surat:surat_list' %}" class="btn btn-outline">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

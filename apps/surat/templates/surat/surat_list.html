@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar Surat — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Daftar Surat</h1>
+    <a href="{% url 'surat:surat_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Buat Surat Baru</a>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding-bottom:0;">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <form class="toolbar-search" method="get">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="Cari nomor surat, perihal..." value="{{ query }}">
+                {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            </form>
+            <div class="toolbar-actions">
+                <select class="form-input" style="width:auto;" onchange="filterByStatus(this.value)">
+                    <option value="">Semua Status</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nomor Surat</th>
+                    <th>Perihal</th>
+                    <th>Kategori</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Dibuat oleh</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in page_obj %}
+                <tr>
+                    <td><a href="{% url 'surat:surat_detail' s.pk %}" style="font-weight:600;">{{ s.nomor_surat }}</a>
+                    </td>
+                    <td>{{ s.perihal|truncatechars:50 }}</td>
+                    <td><span style="color:var(--clr-text-muted);">{{ s.jenis_naskah.nama|default:"-" }}</span></td>
+                    <td>{{ s.tanggal|date:"d M Y" }}</td>
+                    <td><span class="badge {{ s.status_color }}">{{ s.get_status_display }}</span></td>
+                    <td>{{ s.created_by.get_full_name|default:s.created_by.username }}</td>
+                    <td>
+                        <a href="{% url 'surat:surat_detail' s.pk %}" class="btn btn-ghost btn-sm"><i
+                                class="fas fa-eye"></i></a>
+                        {% if s.is_editable %}
+                        <a href="{% url 'surat:surat_update' s.pk %}" class="btn btn-ghost btn-sm"><i
+                                class="fas fa-edit"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <h3>Belum ada surat</h3>
+                            <p>Mulai dengan membuat surat baru.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer">
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status_filter }}"><i
+                    class="fas fa-chevron-left"></i></a>
+            {% else %}
+            <span class="disabled"><i class="fas fa-chevron-left"></i></span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="active">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                href="?page={{ num }}&q={{ query }}&status={{ status_filter }}">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status_filter }}"><i
+                        class="fas fa-chevron-right"></i></a>
+                {% else %}
+                <span class="disabled"><i class="fas fa-chevron-right"></i></span>
+                {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterByStatus(status) {
+        const url = new URL(window.location);
+        if (status) {
+            url.searchParams.set('status', status);
+        } else {
+            url.searchParams.delete('status');
+        }
+        url.searchParams.delete('page');
+        window.location = url;
+    }
+</script>
+{% endblock %}

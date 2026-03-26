@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <a href="{% url 'surat:surat_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Buat Surat Baru
+    </a>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-info">
+            <h3>{{ total }}</h3>
+            <p>Total Surat</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h3>{{ submitted }}</h3>
+            <p>Menunggu Approval</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h3>{{ approved }}</h3>
+            <p>Disetujui</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon danger"><i class="fas fa-times-circle"></i></div>
+        <div class="stat-info">
+            <h3>{{ rejected }}</h3>
+            <p>Ditolak</p>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Grafik Surat Bulanan</h2>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Surat Terbaru</h2>
+        </div>
+        <div class="card-body" style="padding:0;">
+            {% if recent %}
+                {% for s in recent %}
+                <a href="{% url 'surat:surat_detail' s.pk %}" class="menu-item" style="border-left:none;padding:12px 20px;">
+                    <div style="flex:1;">
+                        <div style="font-weight:600;color:var(--clr-text);font-size:0.8125rem;">{{ s.nomor_surat }}</div>
+                        <div style="font-size:0.75rem;color:var(--clr-text-muted);margin-top:2px;">{{ s.perihal|truncatechars:40 }}</div>
+                    </div>
+                    <span class="badge {{ s.status_color }}">{{ s.get_status_display }}</span>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding:2rem;">
+                    <i class="fas fa-inbox"></i>
+                    <p>Belum ada surat.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+    const ctx = document.getElementById('monthlyChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [{
+                    label: 'Jumlah Surat',
+                    data: {{ chart_values|safe }},
+                    backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    barPercentage: 0.6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { family: 'Inter' } },
+                        grid: { color: '#F3F4F6' },
+                    },
+                    x: {
+                        ticks: { font: { family: 'Inter', size: 11 } },
+                        grid: { display: false },
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SIMONAS — Sistem Monitoring Nomor Surat">
+    <title>{% block title %}SIMONAS{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- ── Sidebar ──────────────────────────────────────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="fas fa-envelope-open-text"></i></div>
+                <span class="brand-text">SIMONAS</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <!-- Main -->
+                <div class="menu-section">
+                    <div class="menu-label">Menu Utama</div>
+                    <a href="{% url 'surat:dashboard' %}"
+                        class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-th-large"></i>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                    <a href="{% url 'surat:surat_list' %}"
+                        class="menu-item {% if request.resolver_match.app_name == 'surat' and request.resolver_match.url_name != 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="menu-text">Daftar Surat</span>
+                    </a>
+                    <a href="{% url 'approval:approval_list' %}"
+                        class="menu-item {% if request.resolver_match.app_name == 'approval' %}active{% endif %}">
+                        <i class="fas fa-check-double"></i>
+                        <span class="menu-text">Approval</span>
+                    </a>
+                </div>
+
+                <!-- Master Data -->
+                {% if request.user.role == 'admin' or request.user.role == 'manager' %}
+                <div class="menu-section">
+                    <div class="menu-label">Master Data</div>
+                    <a href="{% url 'master:klasifikasi_arsip_list' %}"
+                        class="menu-item {% if 'klasifikasi' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-sitemap"></i>
+                        <span class="menu-text">Klasifikasi Arsip</span>
+                    </a>
+                    <a href="{% url 'master:jenis_naskah_list' %}"
+                        class="menu-item {% if 'jenis_naskah' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-file-lines"></i>
+                        <span class="menu-text">Jenis Naskah Dinas</span>
+                    </a>
+                    <a href="{% url 'master:unit_kerja_list' %}"
+                        class="menu-item {% if 'unit_kerja' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-building"></i>
+                        <span class="menu-text">Unit Kerja</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Admin -->
+                {% if request.user.role == 'admin' %}
+                <div class="menu-section">
+                    <div class="menu-label">Administrasi</div>
+                    <a href="{% url 'accounts:user_list' %}"
+                        class="menu-item {% if request.resolver_match.app_name == 'accounts' and 'user' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span class="menu-text">Pengguna</span>
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <!-- ── Main Area ────────────────────────────────────────────── -->
+        <div class="main-area">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="topbar-toggle" id="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+
+                <div class="topbar-right">
+                    <button class="topbar-icon-btn">
+                        <i class="far fa-bell"></i>
+                    </button>
+
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-toggle" id="user-dropdown-toggle">
+                            <div class="user-avatar">
+                                {{ request.user.first_name|default:request.user.username|make_list|first|upper }}
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}
+                                </div>
+                                <div class="user-role">{{ request.user.get_role_display }}</div>
+                            </div>
+                            <i class="fas fa-chevron-down" style="font-size:0.7rem;color:var(--clr-text-muted);"></i>
+                        </button>
+                        <div class="dropdown-menu" id="user-dropdown-menu">
+                            <a href="{% url 'accounts:profile' %}"><i class="far fa-user"></i> Profil Saya</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            <div class="content">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i
+                        class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

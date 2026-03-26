@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Jenis Naskah Dinas — SIMONAS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-alt"></i> Jenis Naskah Dinas</h1>
+    {% if request.user.role == 'admin' %}
+    <a href="{% url 'master:jenis_naskah_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding-bottom:0;">
+        <div class="toolbar">
+            <form class="toolbar-search" method="get">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="Cari jenis naskah..." value="{{ query }}">
+            </form>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>Status</th>
+                    {% if request.user.role == 'admin' %}<th>Aksi</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.kode }}</strong></td>
+                    <td>{{ item.nama }}</td>
+                    <td>
+                        {% if item.is_active %}<span class="badge success">Aktif</span>{% else %}<span
+                            class="badge secondary">Nonaktif</span>{% endif %}
+                    </td>
+                    {% if request.user.role == 'admin' %}
+                    <td>
+                        <a href="{% url 'master:jenis_naskah_update' item.pk %}" class="btn btn-ghost btn-sm"><i
+                                class="fas fa-edit"></i></a>
+                        <a href="{% url 'master:jenis_naskah_delete' item.pk %}" class="btn btn-ghost btn-sm"
+                            style="color:var(--clr-danger);"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state"><i class="fas fa-file-alt"></i>
+                            <p>Belum ada jenis naskah dinas.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
