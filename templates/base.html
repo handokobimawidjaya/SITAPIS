@@ -5,8 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SIMONAS — Sistem Monitoring Nomor Surat">
-    <title>{% block title %}SIMONAS{% endblock %}</title>
+    <meta name="description" content="SITAPIS — Sistem Informasi Tata Administrasi Penomoran dan Inventarisasi Surat">
+    <title>{% block title %}SITAPIS{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon.svg' %}">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -28,7 +32,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-icon"><i class="fas fa-envelope-open-text"></i></div>
-                <span class="brand-text">SIMONAS</span>
+                <span class="brand-text">SITAPIS</span>
             </div>
 
             <nav class="sidebar-menu">
@@ -41,9 +45,14 @@
                         <span class="menu-text">Dashboard</span>
                     </a>
                     <a href="{% url 'surat:surat_list' %}"
-                        class="menu-item {% if request.resolver_match.app_name == 'surat' and request.resolver_match.url_name != 'dashboard' %}active{% endif %}">
-                        <i class="fas fa-file-alt"></i>
-                        <span class="menu-text">Daftar Surat</span>
+                        class="menu-item {% if request.resolver_match.app_name == 'surat' and request.resolver_match.url_name not in 'dashboard,surat_masuk_list,surat_masuk_create,surat_masuk_detail,surat_masuk_update,surat_masuk_delete' %}active{% endif %}">
+                        <i class="fas fa-file-export"></i>
+                        <span class="menu-text">Surat Keluar</span>
+                    </a>
+                    <a href="{% url 'surat:surat_masuk_list' %}"
+                        class="menu-item {% if 'surat_masuk' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-inbox"></i>
+                        <span class="menu-text">Surat Masuk</span>
                     </a>
                     <a href="{% url 'approval:approval_list' %}"
                         class="menu-item {% if request.resolver_match.app_name == 'approval' %}active{% endif %}">
@@ -53,7 +62,7 @@
                 </div>
 
                 <!-- Master Data -->
-                {% if request.user.role == 'admin' or request.user.role == 'manager' %}
+                {% if request.user.role == 'admin' or request.user.role == 'sekretaris' %}
                 <div class="menu-section">
                     <div class="menu-label">Master Data</div>
                     <a href="{% url 'master:klasifikasi_arsip_list' %}"

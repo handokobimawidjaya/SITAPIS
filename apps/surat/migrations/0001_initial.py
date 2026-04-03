@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             name='Surat',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nomor_surat', models.CharField(help_text='Nomor ter-generate otomatis dari master', max_length=100, unique=True, verbose_name='Nomor Surat')),
+                ('nomor_surat', models.CharField(help_text='Nomor ter-generate otomatis saat surat dibuat', max_length=100, unique=True, verbose_name='Nomor Surat')),
                 ('perihal', models.CharField(max_length=255, verbose_name='Perihal')),
                 ('tanggal', models.DateField(verbose_name='Tanggal Surat')),
                 ('tujuan', models.CharField(blank=True, max_length=255, verbose_name='Tujuan')),
@@ -29,7 +29,8 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='surat_created', to=settings.AUTH_USER_MODEL, verbose_name='Dibuat oleh')),
-                ('master_surat', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='master.mastersurat', verbose_name='Kategori Surat')),
+                ('jenis_naskah', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='master.jenisnaskahdinas', verbose_name='Jenis Naskah Dinas')),
+                ('klasifikasi', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='master.klasifikasiarsip', verbose_name='Klasifikasi Arsip', help_text='Kode klasifikasi arsip sesuai substansi surat')),
             ],
             options={
                 'verbose_name': 'Surat',

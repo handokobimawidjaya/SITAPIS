@@ -68,7 +68,7 @@ def _generic_delete(request, model_class, pk, list_url, success_msg):
 # ── Klasifikasi Arsip ──────────────────────────────────────────────────
 
 @login_required
-@role_required('admin', 'manager')
+@role_required('admin', 'sekretaris')
 def klasifikasi_arsip_list(request):
     """List all archive classification codes."""
     return _generic_list(
@@ -117,7 +117,7 @@ def klasifikasi_arsip_delete(request, pk):
 # ── Jenis Naskah Dinas ─────────────────────────────────────────────────
 
 @login_required
-@role_required('admin', 'manager')
+@role_required('admin', 'sekretaris')
 def jenis_naskah_list(request):
     """List all letter types."""
     return _generic_list(
@@ -166,7 +166,7 @@ def jenis_naskah_delete(request, pk):
 # ── Unit Kerja ──────────────────────────────────────────────────────────
 
 @login_required
-@role_required('admin', 'manager')
+@role_required('admin', 'sekretaris')
 def unit_kerja_list(request):
     """List all organizational units."""
     return _generic_list(

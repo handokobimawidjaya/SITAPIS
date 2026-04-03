@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — SITAPIS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content" style="display:flex; align-items:center; gap:1rem;">
+        <a href="{% url 'surat:surat_masuk_list' %}" class="btn btn-ghost"><i class="fas fa-arrow-left"></i></a>
+        <h1>{{ title }}</h1>
+    </div>
+</div>
+
+<div class="card" style="max-width:800px;">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+                <strong>Perhatian!</strong> Terdapat kesalahan pengisian form:
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.nomor_surat.id_for_label }}">Nomor Surat <span style="color:var(--clr-danger);">*</span></label>
+                {{ form.nomor_surat }}
+                <div class="form-help">Nomor surat yang tertera dari instansi pengirim</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.pengirim.id_for_label }}">Pengirim <span style="color:var(--clr-danger);">*</span></label>
+                {{ form.pengirim }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.perihal.id_for_label }}">Perihal <span style="color:var(--clr-danger);">*</span></label>
+                {{ form.perihal }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.disposisi.id_for_label }}">Disposisi Ke <span style="color:var(--clr-danger);">*</span></label>
+                {{ form.disposisi }}
+                <div class="form-help">Pilih Kasubbag / Sekretaris yang akan menerima disposisi ini</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.lampiran_surat.id_for_label }}">Lampiran Surat Masuk (Scan PDF)</label>
+                {% if surat_masuk and surat_masuk.lampiran_surat %}
+                    <div style="margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fas fa-file-pdf" style="color:var(--clr-danger);"></i>
+                        <a href="{{ surat_masuk.lampiran_surat.url }}" target="_blank">Lihat Berkas Saat Ini</a>
+                    </div>
+                {% endif %}
+                {{ form.lampiran_surat }}
+                <div class="form-help">Pilih file PDF (opsional untuk Draft, <strong>wajib</strong> jika ingin disubmit menjadi Disposisi/Inprogress).</div>
+            </div>
+
+            <div class="form-actions" style="margin-top:2rem;">
+                <a href="{% url 'surat:surat_masuk_list' %}" class="btn btn-secondary">Batal</a>
+                <div style="display:flex; gap:0.5rem;">
+                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                        <i class="fas fa-save"></i> Simpan Draft
+                    </button>
+                    <button type="submit" name="action" value="disposisi" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Simpan & Mulai Disposisi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

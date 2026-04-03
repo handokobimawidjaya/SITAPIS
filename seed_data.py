@@ -19,7 +19,7 @@ from django.utils import timezone
 admin_user = User.objects.get(username='admin')
 admin_user.role = 'admin'
 admin_user.first_name = 'Admin'
-admin_user.last_name = 'SIMONAS'
+admin_user.last_name = 'SITAPIS'
 admin_user.save()
 print("✓ Admin role set")
 
@@ -48,21 +48,37 @@ jenis_surat, _ = JenisNaskahDinas.objects.get_or_create(
 )
 print("✓ Jenis Naskah Dinas dibuat")
 
-# Create manager user
-mgr, created = User.objects.get_or_create(
-    username='manager',
+# Create kasubbag user
+kasubbag, created = User.objects.get_or_create(
+    username='kasubbag',
     defaults={
-        'first_name': 'Budi',
-        'last_name': 'Manager',
-        'email': 'manager@sitapis.local',
-        'role': 'manager',
+        'first_name': 'Kasubbag',
+        'last_name': 'Umum',
+        'email': 'kasubbag@sitapis.local',
+        'role': 'kasubbag',
         'satker': kabupaten,
     },
 )
 if created:
-    mgr.set_password('manager123')
-    mgr.save()
-print("✓ User manager dibuat (manager/manager123)")
+    kasubbag.set_password('kasubbag123')
+    kasubbag.save()
+print("✓ User kasubbag dibuat (kasubbag/kasubbag123)")
+
+# Create sekretaris user
+sekretaris, created = User.objects.get_or_create(
+    username='sekretaris',
+    defaults={
+        'first_name': 'Sekretaris',
+        'last_name': 'Dinas',
+        'email': 'sekretaris@sitapis.local',
+        'role': 'sekretaris',
+        'satker': kabupaten,
+    },
+)
+if created:
+    sekretaris.set_password('sekretaris123')
+    sekretaris.save()
+print("✓ User sekretaris dibuat (sekretaris/sekretaris123)")
 
 # Create staff user
 stf, created = User.objects.get_or_create(
@@ -105,6 +121,7 @@ for perihal, tgl, tujuan, pengirim in samples:
 
 print(f"✓ {len(samples)} surat contoh dibuat")
 print("\nSelesai! Silakan login ke http://127.0.0.1:8000/")
-print("  admin  / admin123   (Administrator)")
-print("  manager / manager123 (Manager)")
-print("  staff  / staff123   (Staff)")
+print("  admin      / admin123      (Administrator)")
+print("  sekretaris / sekretaris123 (Sekretaris)")
+print("  kasubbag   / kasubbag123   (Kasubbag)")
+print("  staff      / staff123      (Staff)")

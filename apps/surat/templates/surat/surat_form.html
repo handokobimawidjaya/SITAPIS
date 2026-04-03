@@ -1,59 +1,121 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }} — SIMONAS{% endblock %}
+{% block title %}{{ title }} — SITAPIS{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>{{ title }}</h1>
+    <div class="header-content" style="display:flex; align-items:center; gap:1rem;">
+        <a href="{% url 'surat:surat_list' %}" class="btn btn-ghost"><i class="fas fa-arrow-left"></i></a>
+        <h1>{{ title }}</h1>
+    </div>
 </div>
 
-<div class="card" style="max-width:720px;">
+<div class="card" style="max-width:800px;">
     <div class="card-body">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+                <strong>Perhatian!</strong> Terdapat kesalahan pengisian form:
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             {% for field in form %}
             <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }} 
+                    {% if field.field.required %}<span style="color:var(--clr-danger);">*</span>{% endif %}
+                </label>
                 {{ field }}
                 {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
-                {% for error in field.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
             </div>
             {% endfor %}
 
-            <!-- File Attachments -->
+            <!-- Attachment field - only show when status is Inprogress -->
+            {% if surat and surat.status == 'inprogress' %}
             <div class="form-group">
-                <label><i class="fas fa-paperclip"></i> Lampiran</label>
-                <input type="file" name="attachments" class="form-input" multiple accept=".pdf">
-                <div class="form-help">Pastikan file berformat PDF</div>
+                <label class="form-label"><i class="fas fa-paperclip"></i> Lampiran (Scan PDF) <span style="color:var(--clr-danger);">*</span></label>
+                <input type="file" name="attachments" class="form-input" multiple accept=".pdf" required>
+                <div class="form-help">Wajib upload minimal 1 file PDF untuk menyelesaikan persetujuan dan verifikasi surat.</div>
             </div>
+            {% endif %}
 
+            <!-- Show existing attachments when editing -->
             {% if attachments %}
             <div class="form-group">
-                <label>File Terlampir:</label>
-                <ul class="attachment-list">
+                <label class="form-label">File Terlampir Saat Ini:</label>
+                <ul class="attachment-list" style="list-style:none; padding:0; margin:0;">
                     {% for att in attachments %}
-                    <li class="attachment-item">
-                        <div class="file-info">
-                            <i class="fas fa-file"></i>
-                            <a href="{{ att.file.url }}" target="_blank">{{ att.filename }}</a>
-                        </div>
-                        <form method="post" action="{% url 'surat:attachment_delete' att.pk %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--clr-danger);" onclick="return confirm('Hapus lampiran ini?')">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
+                    <li class="attachment-item" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <i class="fas fa-file-pdf" style="color:var(--clr-danger);"></i>
+                        <a href="{{ att.file.url }}" target="_blank" style="font-weight:500;">{{ att.filename }}</a>
+                        {% if surat.is_editable %}
+                            <!-- Since we can't easily inline delete here safely without a nested form or JS, we rely on detail page for deletion -->
+                        {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
             </div>
             {% endif %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
-                <a href="{% url 'surat:surat_list' %}" class="btn btn-outline">Batal</a>
+            <div class="form-actions" style="margin-top:2rem;">
+                <a href="{% url 'surat:surat_list' %}" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Surat Keluar</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        var kategoriField = document.querySelector('[name="kategori_surat"]');
+        var tanggalField = document.querySelector('[name="tanggal"]');
+        var notesField = document.querySelector('[name="notes"]');
+        var notesGroup = notesField ? notesField.closest('.form-group') : null;
+
+        function updateFormFields() {
+            if (kategoriField && tanggalField) {
+                if (kategoriField.value === 'terkini') {
+                    // Terkini: readonly tanggal, auto-fill today, hide notes
+                    tanggalField.setAttribute('readonly', 'readonly');
+                    var today = new Date();
+                    var year = today.getFullYear();
+                    var month = String(today.getMonth() + 1).padStart(2, '0');
+                    var day = String(today.getDate()).padStart(2, '0');
+                    tanggalField.value = year + '-' + month + '-' + day;
+
+                    // Hide notes field
+                    if (notesGroup) {
+                        notesGroup.style.display = 'none';
+                        notesField.removeAttribute('required');
+                    }
+                } else {
+                    // Urgensi: editable tanggal, show notes
+                    tanggalField.removeAttribute('readonly');
+
+                    if (notesGroup) {
+                        notesGroup.style.display = '';
+                    }
+                }
+            }
+        }
+
+        if (kategoriField) {
+            kategoriField.addEventListener('change', updateFormFields);
+            // Initial check on page load
+            updateFormFields();
+        }
+    })();
+</script>
 {% endblock %}

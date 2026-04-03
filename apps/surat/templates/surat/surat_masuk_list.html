@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Surat Masuk — SITAPIS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Surat Masuk</h1>
+    <a href="{% url 'surat:surat_masuk_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Buat Surat Masuk</a>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding-bottom:0;">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <form class="toolbar-search" method="get">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="Cari nomor surat, perihal, pengirim..." value="{{ query }}">
+                {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            </form>
+            <div class="toolbar-actions">
+                <select class="form-input" style="width:auto;" onchange="filterByStatus(this.value)">
+                    <option value="">Semua Status</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nomor Surat</th>
+                    <th>Perihal</th>
+                    <th>Pengirim</th>
+                    <th>Disposisi Ke</th>
+                    <th>Status</th>
+                    <th>Dibuat oleh</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sm in page_obj %}
+                <tr>
+                    <td><a href="{% url 'surat:surat_masuk_detail' sm.pk %}" style="font-weight:600;">{{ sm.nomor_surat }}</a>
+                    </td>
+                    <td>{{ sm.perihal|truncatechars:40 }}</td>
+                    <td><span style="color:var(--clr-text-muted);">{{ sm.pengirim }}</span></td>
+                    <td>
+                        {% if sm.disposisi %}
+                            {{ sm.disposisi.get_full_name|default:sm.disposisi.username|truncatechars:20 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td><span class="badge {{ sm.status_color }}">{{ sm.get_status_display }}</span></td>
+                    <td>{{ sm.created_by.get_full_name|default:sm.created_by.username|truncatechars:20 }}</td>
+                    <td>
+                        <a href="{% url 'surat:surat_masuk_detail' sm.pk %}" class="btn btn-ghost btn-sm"><i class="fas fa-eye"></i></a>
+                        {% if sm.status != 'done' %}
+                        <a href="{% url 'surat:surat_masuk_update' sm.pk %}" class="btn btn-ghost btn-sm"><i class="fas fa-edit"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>Belum ada surat masuk</h3>
+                            <p>Mulai dengan membuat surat masuk baru.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer">
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status_filter }}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+            <span class="disabled"><i class="fas fa-chevron-left"></i></span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ query }}&status={{ status_filter }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status_filter }}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+            <span class="disabled"><i class="fas fa-chevron-right"></i></span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterByStatus(status) {
+        const url = new URL(window.location);
+        if (status) {
+            url.searchParams.set('status', status);
+        } else {
+            url.searchParams.delete('status');
+        }
+        url.searchParams.delete('page');
+        window.location = url;
+    }
+</script>
+{% endblock %}

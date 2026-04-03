@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ surat.nomor_surat }} — SIMONAS{% endblock %}
+{% block title %}{{ surat.nomor_surat }} — SITAPIS{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -16,14 +16,42 @@
     <div style="display:flex;gap:8px;">
         {% if surat.status == 'draft' %}
         <a href="{% url 'surat:surat_update' surat.pk %}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
+        {% if surat.kategori_surat == 'urgensi' %}
         <button class="btn btn-warning" onclick="openModal('submitModal')"><i class="fas fa-paper-plane"></i>
             Ajukan</button>
+        {% else %}
+        <form method="post" action="{% url 'approval:submit' surat.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Ajukan</button>
+        </form>
         {% endif %}
-        {% if surat.status == 'submitted' and request.user.role != 'staff' %}
+        {% endif %}
+
+        {% if surat.status == 'submitted' and request.user.role != 'staff' and surat.kategori_surat == 'urgensi' %}
         <button class="btn btn-success" onclick="openModal('approveModal')"><i class="fas fa-check"></i>
-            Setujui</button>
+            Setujui (Kasubbag)</button>
+        <button class="btn btn-danger" onclick="openModal('rejectModal')"><i class="fas fa-times"></i> Tolak</button>
+
+        {% endif %}
+
+        {% if surat.status == 'approved_kasubbag' and request.user.role != 'staff' and request.user.role != 'kasubbag' and surat.kategori_surat == 'urgensi' %}
+        <button class="btn btn-success" onclick="openModal('approveSekretarisModal')"><i class="fas fa-check"></i> Setujui (Sekretaris)</button>
         <button class="btn btn-danger" onclick="openModal('rejectModal')"><i class="fas fa-times"></i> Tolak</button>
         {% endif %}
+
+
+        {% if surat.status == 'approved' %}
+        <form method="post" action="{% url 'approval:start' surat.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary"><i class="fas fa-play"></i> Mulai Kerjakan</button>
+        </form>
+        {% endif %}
+
+        {% if surat.status == 'inprogress' %}
+        <button class="btn btn-success" onclick="openModal('completeModal')"><i class="fas fa-check-double"></i>
+            Selesaikan</button>
+        {% endif %}
+
         {% if surat.status == 'rejected' %}
         <form method="post" action="{% url 'approval:revise' surat.pk %}" style="display:inline;">
             {% csrf_token %}
@@ -40,8 +68,9 @@
             <div>
                 <div class="detail-field">
                     <div class="field-label">Nomor Surat</div>
-                    <div class="field-value" style="font-size:1.1rem;font-weight:700;color:var(--clr-primary);">{{
-                        surat.nomor_surat }}</div>
+                    <div class="field-value" style="font-size:1.1rem;font-weight:700;color:var(--clr-primary);">
+                        {{ surat.nomor_surat }}
+                    </div>
                 </div>
                 <div class="detail-field">
                     <div class="field-label">Kategori</div>
@@ -100,8 +129,9 @@
                     <i class="fas fa-file"></i>
                     <a href="{{ att.file.url }}" target="_blank">{{ att.filename }}</a>
                 </div>
-                <span style="font-size:0.75rem;color:var(--clr-text-muted);">{{ att.uploaded_at|date:"d/m/Y H:i"
-                    }}</span>
+                <span style="font-size:0.75rem;color:var(--clr-text-muted);">
+                    {{ att.uploaded_at|date:"d/m/Y H:i" }}
+                </span>
             </li>
             {% endfor %}
         </ul>
@@ -121,8 +151,11 @@
             <div class="timeline-item {{ h.action }}">
                 <div class="timeline-content">
                     <strong>{{ h.get_action_display }}</strong> oleh {{ h.user.get_full_name|default:h.user.username }}
-                    {% if h.comment %}<p style="margin-top:4px;color:var(--clr-text-muted);font-size:0.8125rem;">{{
-                        h.comment }}</p>{% endif %}
+                    {% if h.comment %}
+                    <p style="margin-top:4px;color:var(--clr-text-muted);font-size:0.8125rem;">
+                        {{ h.comment }}
+                    </p>
+                    {% endif %}
                     <div class="timeline-meta">{{ h.timestamp|date:"d F Y, H:i" }}</div>
                 </div>
             </div>
@@ -147,7 +180,7 @@
         <form method="post" action="{% url 'approval:submit' surat.pk %}">
             {% csrf_token %}
             <div class="modal-body">
-                <p style="margin-bottom:16px;">Surat akan diajukan untuk di-approve oleh Manager.</p>
+                <p style="margin-bottom:16px;">Surat akan diajukan untuk di-approve oleh KASUBBAG dan Sekertaris.</p>
                 <div class="form-group">
                     <label>Komentar (opsional)</label>
                     <textarea name="comment" class="form-input" rows="3" placeholder="Tambahkan komentar..."></textarea>
@@ -171,8 +204,9 @@
         <form method="post" action="{% url 'approval:approve' surat.pk %}">
             {% csrf_token %}
             <div class="modal-body">
-                <p style="margin-bottom:16px;">Apakah Anda yakin ingin menyetujui surat <strong>{{ surat.nomor_surat
-                        }}</strong>?</p>
+                <p style="margin-bottom:16px;">Apakah Anda yakin ingin menyetujui surat
+                    <strong>{{ surat.nomor_surat }}</strong> ?
+                </p>
                 <div class="form-group">
                     <label>Komentar (opsional)</label>
                     <textarea name="comment" class="form-input" rows="3" placeholder="Tambahkan komentar..."></textarea>
@@ -207,6 +241,61 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('rejectModal')">Batal</button>
                 <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Tolak</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Approve Sekretaris Modal -->
+<div class="modal-overlay" id="approveSekretarisModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Setujui Surat (Sekretaris)</h3>
+            <button class="modal-close" onclick="closeModal('approveSekretarisModal')"><i
+                    class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{% url 'approval:approve' surat.pk %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p style="margin-bottom:16px;">Apakah Anda yakin ingin menyetujui surat
+                    <strong>{{ surat.nomor_surat }}</strong> ?
+                </p>
+                <div class="form-group">
+                    <label>Komentar (opsional)</label>
+                    <textarea name="comment" class="form-input" rows="3" placeholder="Tambahkan komentar..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline"
+                    onclick="closeModal('approveSekretarisModal')">Batal</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Setujui</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Complete Modal -->
+<div class="modal-overlay" id="completeModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Selesaikan Surat</h3>
+            <button class="modal-close" onclick="closeModal('completeModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{% url 'approval:complete' surat.pk %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p style="margin-bottom:16px;">Upload lampiran untuk menyelesaikan surat
+                    <strong>{{ surat.nomor_surat }}</strong>?
+                </p>
+                <div class="form-group">
+                    <label>Lampiran <span style="color:var(--clr-danger);">*</span></label>
+                    <input type="file" name="attachments" class="form-input" multiple accept=".pdf" required>
+                    <div class="form-help">Wajib upload minimal 1 file PDF</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('completeModal')">Batal</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-check-double"></i> Selesaikan</button>
             </div>
         </form>
     </div>

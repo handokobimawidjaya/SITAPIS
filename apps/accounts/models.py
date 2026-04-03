@@ -12,7 +12,8 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         """User role choices for access control."""
         ADMIN = 'admin', 'Administrator'
-        MANAGER = 'manager', 'Manager'
+        SEKRETARIS = 'sekretaris', 'Sekretaris'
+        KASUBBAG = 'kasubbag', 'Kasubbag'
         STAFF = 'staff', 'Staff'
 
     role = models.CharField(
@@ -51,9 +52,14 @@ class User(AbstractUser):
         return self.role == self.Role.ADMIN
 
     @property
-    def is_manager(self):
-        """Check if user has manager role."""
-        return self.role == self.Role.MANAGER
+    def is_sekretaris(self):
+        """Check if user has sekretaris role."""
+        return self.role == self.Role.SEKRETARIS
+
+    @property
+    def is_kasubbag(self):
+        """Check if user has kasubbag role."""
+        return self.role == self.Role.KASUBBAG
 
     @property
     def is_staff_role(self):

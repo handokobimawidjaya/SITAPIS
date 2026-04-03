@@ -14,4 +14,6 @@ urlpatterns = [
     path('approve/<int:pk>/', views.approve_surat, name='approve'),
     path('reject/<int:pk>/', views.reject_surat, name='reject'),
     path('revise/<int:pk>/', views.revise_surat, name='revise'),
+    path('start/<int:pk>/', views.start_surat, name='start'),
+    path('complete/<int:pk>/', views.complete_surat, name='complete'),
 ]

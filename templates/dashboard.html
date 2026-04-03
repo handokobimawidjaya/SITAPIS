@@ -1,23 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard — SIMONAS{% endblock %}
+{% block title %}Dashboard — SITAPIS{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>Dashboard</h1>
-    <a href="{% url 'surat:surat_create' %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Buat Surat Baru
-    </a>
 </div>
 
 <!-- Stat Cards -->
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon primary"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-icon primary"><i class="fas fa-file-export"></i></div>
         <div class="stat-info">
-            <h3>{{ total }}</h3>
-            <p>Total Surat</p>
+            <h3>{{ total_keluar }}</h3>
+            <p>Total Surat Keluar</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon info"><i class="fas fa-inbox"></i></div>
+        <div class="stat-info">
+            <h3>{{ total_masuk }}</h3>
+            <p>Total Surat Masuk</p>
         </div>
     </div>
     <div class="stat-card">
@@ -64,20 +68,22 @@
         </div>
         <div class="card-body" style="padding:0;">
             {% if recent %}
-                {% for s in recent %}
-                <a href="{% url 'surat:surat_detail' s.pk %}" class="menu-item" style="border-left:none;padding:12px 20px;">
-                    <div style="flex:1;">
-                        <div style="font-weight:600;color:var(--clr-text);font-size:0.8125rem;">{{ s.nomor_surat }}</div>
-                        <div style="font-size:0.75rem;color:var(--clr-text-muted);margin-top:2px;">{{ s.perihal|truncatechars:40 }}</div>
+            {% for s in recent %}
+            <a href="{% url 'surat:surat_detail' s.pk %}" class="menu-item" style="border-left:none;padding:12px 20px;">
+                <div style="flex:1;">
+                    <div style="font-weight:600;color:var(--clr-text);font-size:0.8125rem;">{{ s.nomor_surat }}</div>
+                    <div style="font-size:0.75rem;color:var(--clr-text-muted);margin-top:2px;">
+                        {{ s.perihal|truncatechars:40 }}
                     </div>
-                    <span class="badge {{ s.status_color }}">{{ s.get_status_display }}</span>
-                </a>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state" style="padding:2rem;">
-                    <i class="fas fa-inbox"></i>
-                    <p>Belum ada surat.</p>
                 </div>
+                <span class="badge {{ s.status_color }}">{{ s.get_status_display }}</span>
+            </a>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state" style="padding:2rem;">
+                <i class="fas fa-inbox"></i>
+                <p>Belum ada surat.</p>
+            </div>
             {% endif %}
         </div>
     </div>

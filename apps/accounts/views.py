@@ -54,7 +54,7 @@ def profile_view(request):
 @role_required('admin')
 def user_list(request):
     """List all users. Admin only."""
-    users = User.objects.select_related('department').all()
+    users = User.objects.select_related('satker').all()
     query = request.GET.get('q', '')
     if query:
         users = users.filter(username__icontains=query)

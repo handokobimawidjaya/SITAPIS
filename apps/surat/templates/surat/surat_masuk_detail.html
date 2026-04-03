@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Surat Masuk — SITAPIS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content" style="display:flex; align-items:center; gap:1rem;">
+        <a href="{% url 'surat:surat_masuk_list' %}" class="btn btn-ghost"><i class="fas fa-arrow-left"></i></a>
+        <h1>Detail Surat Masuk: {{ surat_masuk.nomor_surat }}</h1>
+    </div>
+    
+    <div class="header-actions">
+        {% if surat_masuk.status != 'done' %}
+            <a href="{% url 'surat:surat_masuk_update' surat_masuk.pk %}" class="btn btn-secondary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        {% endif %}
+        {% if surat_masuk.status == 'draft' %}
+            <a href="{% url 'surat:surat_masuk_delete' surat_masuk.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Hapus
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="document-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+    <!-- Bagian Kiri: Informasi Dokumen Utama -->
+    <div class="main-column">
+        <div class="card">
+            <div class="card-header" style="border-bottom: 1px solid var(--clr-border);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="font-size: 1.1rem; font-weight: 600;">Informasi Surat</h2>
+                    <span class="badge {{ surat_masuk.status_color }}">{{ surat_masuk.get_status_display }}</span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="info-group">
+                        <div class="info-label" style="font-size:0.85rem; color:var(--clr-text-muted); margin-bottom:0.25rem;">Nomor Surat</div>
+                        <div class="info-value" style="font-weight:600;">{{ surat_masuk.nomor_surat }}</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label" style="font-size:0.85rem; color:var(--clr-text-muted); margin-bottom:0.25rem;">Asal / Pengirim</div>
+                        <div class="info-value">{{ surat_masuk.pengirim }}</div>
+                    </div>
+
+                    <div class="info-group" style="grid-column: 1 / -1;">
+                        <div class="info-label" style="font-size:0.85rem; color:var(--clr-text-muted); margin-bottom:0.25rem;">Perihal</div>
+                        <div class="info-value">{{ surat_masuk.perihal }}</div>
+                    </div>
+
+                    <div class="info-group">
+                        <div class="info-label" style="font-size:0.85rem; color:var(--clr-text-muted); margin-bottom:0.25rem;">Disposisi Ke</div>
+                        <div class="info-value">
+                            {% if surat_masuk.disposisi %}
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <div class="avatar" style="width:24px; height:24px; border-radius:50%; background:var(--clr-primary-light); color:var(--clr-primary); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:bold;">
+                                        {{ surat_masuk.disposisi.get_full_name|default:surat_masuk.disposisi.username|make_list|first|upper }}
+                                    </div>
+                                    <span>{{ surat_masuk.disposisi.get_full_name|default:surat_masuk.disposisi.username }} ({{ surat_masuk.disposisi.get_role_display }})</span>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="info-group">
+                        <div class="info-label" style="font-size:0.85rem; color:var(--clr-text-muted); margin-bottom:0.25rem;">Dibuat Oleh</div>
+                        <div class="info-value">{{ surat_masuk.created_by.get_full_name|default:surat_masuk.created_by.username }}<br><small style="color:var(--clr-text-muted);">{{ surat_masuk.created_at|date:"d M Y, H:i" }}</small></div>
+                    </div>
+                </div>
+
+                <!-- Lampiran section -->
+                <div style="margin-top:2rem; border-top:1px solid var(--clr-border); padding-top:1rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+                        <i class="fas fa-paperclip" style="color:var(--clr-text-muted);"></i>
+                        <span style="font-weight:600;">Lampiran Surat (File Scan PDF)</span>
+                    </div>
+
+                    {% if surat_masuk.lampiran_surat %}
+                        <div class="attachment-item" style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border:1px solid var(--clr-border); border-radius:0.5rem; background:var(--clr-surface-alt);">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <i class="fas fa-file-pdf" style="color:var(--clr-danger); font-size:1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight:500;">Dokumen Surat Masuk</div>
+                                    <div style="font-size:0.8rem; color:var(--clr-text-muted);">Tersedia PDF Bersamaan dengan Disposisi</div>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <a href="{{ surat_masuk.lampiran_surat.url }}" target="_blank" class="btn btn-ghost btn-sm" title="Lihat/Download Berkas">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state" style="padding: 1.5rem; border: 1px dashed var(--clr-border);">
+                            <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom:0.5rem; color:var(--clr-text-muted);"></i>
+                            <div style="color:var(--clr-text-muted);">Tidak ada lampiran yang diupload pada surat ini.</div>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bagian Kanan: Log Status & Tindak Lanjut -->
+    <div class="side-column">
+
+        <!-- Tindak Lanjut Form untuk User Disposisi (Jika INPROGRESS) -->
+        {% if tindak_lanjut_form %}
+            <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--clr-primary);">
+                <div class="card-header" style="background:var(--clr-primary-light);">
+                    <h3 style="font-size:1rem; margin:0; color:var(--clr-primary-dark);"><i class="fas fa-clipboard-check" style="margin-right:0.5rem;"></i> Form Tindak Lanjut</h3>
+                </div>
+                <div class="card-body">
+                    <p style="font-size:0.9rem; color:var(--clr-text-muted); margin-bottom:1rem;">
+                        Surat ini didisposisikan kepada Anda. Harap berikan alasan/komentar tindakan yang telah dilakukan untuk menyelesaikan surat masuk ini.
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ tindak_lanjut_form.catatan }}
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" style="width:100%;">
+                            Selesaikan Tindak Lanjut <i class="fas fa-check"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if surat_masuk.status == 'done' %}
+            <div class="card" style="border-left: 4px solid var(--clr-success);">
+                <div class="card-header" style="background:#e8f5e9;">
+                    <h3 style="font-size:1rem; margin:0; color:#2e7d32;"><i class="fas fa-check-circle" style="margin-right:0.5rem;"></i> Selesai Ditindaklanjuti</h3>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom:0.5rem;">
+                        <span style="font-size:0.85rem; color:var(--clr-text-muted);">Oleh:</span>
+                        <strong>{{ surat_masuk.disposisi.get_full_name|default:surat_masuk.disposisi.username }}</strong>
+                    </div>
+                    <div style="margin-bottom:0.5rem;">
+                        <span style="font-size:0.85rem; color:var(--clr-text-muted);">Tgl Diperbarui:</span>
+                        <span>{{ surat_masuk.updated_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <span style="font-size:0.85rem; color:var(--clr-text-muted);">Catatan Tindak Lanjut:</span>
+                        <div style="background:var(--clr-surface-alt); padding:0.75rem; border-radius:0.25rem; font-size:0.95rem; margin-top:0.25rem;">
+                            {{ surat_masuk.catatan|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

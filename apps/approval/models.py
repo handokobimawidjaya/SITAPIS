@@ -17,6 +17,7 @@ class ApprovalHistory(models.Model):
     class Action(models.TextChoices):
         """Approval action types."""
         SUBMIT = 'submit', 'Diajukan'
+        INPROGRESS = 'inprogress', 'Ditindaklanjuti'
         APPROVE = 'approve', 'Disetujui'
         REJECT = 'reject', 'Ditolak'
         REVISE = 'revise', 'Direvisi'

@@ -21,11 +21,13 @@ from apps.master.models import JenisNaskahDinas, KlasifikasiArsip, UnitKerja
 
 def import_jenis_naskah_dinas():
     """
-    Import data dari 'Data Master Jenis Naskah Dinas SIMONAS.xlsx' ke JenisNaskahDinas.
-    
+    Import data dari 'Data Master Jenis Naskah Dinas SITAPIS.xlsx' ke JenisNaskahDinas.
+
     File berisi: Kode | Jenis Naskah Dinas | Status
     """
-    filepath = 'document_requirement/Data Master Jenis Naskah Dinas SIMONAS.xlsx'
+    print("\n[Jenis Naskah Dinas] Mulai import...")
+    
+    filepath = 'document_requirement/Data Master Jenis Naskah Dinas SITAPIS.xlsx'
     
     print(f"\n📄 Import Jenis Naskah Dinas dari: {filepath}")
     wb = openpyxl.load_workbook(filepath)
@@ -72,12 +74,15 @@ def import_jenis_naskah_dinas():
 
 def import_klasifikasi_arsip():
     """
-    Import data dari 'Data Master Klasifikasi Arsip SIMONAS.xlsx' ke KlasifikasiArsip.
-    
+    Import data dari 'Data Master Klasifikasi Arsip SITAPIS.xlsx' ke KlasifikasiArsip.
+
     File berisi: Kode Klasifikasi | Keterangan | Status
     Mendukung struktur hierarki (PP → PP.01 → PP.01.1)
     """
-    filepath = 'document_requirement/Data Master Klasifikasi Arsip SIMONAS.xlsx'
+    print("\n[Klasifikasi Arsip] Mulai pre-processing...")
+    
+    # 1. Baca data Excel
+    filepath = 'document_requirement/Data Master Klasifikasi Arsip SITAPIS.xlsx'
     
     print(f"\n📄 Import Klasifikasi Arsip dari: {filepath}")
     wb = openpyxl.load_workbook(filepath)
@@ -163,12 +168,15 @@ def import_klasifikasi_arsip():
 
 def import_unit_kerja():
     """
-    Import data dari 'Data Master Unit Kerja SIMONAS.xlsx' ke UnitKerja.
-    
+    Import data dari 'Data Master Unit Kerja SITAPIS.xlsx' ke UnitKerja.
+
     File berisi: Kode Satker | Nama Satker | Status
     Digunakan untuk SATKER user.
     """
-    filepath = 'document_requirement/Data Master Unit Kerja SIMONAS.xlsx'
+    print("\n[Unit Kerja] Mulai import...")
+    
+    # 1. Baca data Excel
+    filepath = 'document_requirement/Data Master Unit Kerja SITAPIS.xlsx'
     
     print(f"\n📄 Import Unit Kerja dari: {filepath}")
     wb = openpyxl.load_workbook(filepath)

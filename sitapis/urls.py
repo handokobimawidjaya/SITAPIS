@@ -1,5 +1,5 @@
 """
-SIMONAS URL Configuration.
+SITAPIS URL Configuration.
 """
 
 from django.contrib import admin
