@@ -35,7 +35,8 @@
         {% endif %}
 
         {% if surat.status == 'approved_kasubbag' and request.user.role != 'staff' and request.user.role != 'kasubbag' and surat.kategori_surat == 'urgensi' %}
-        <button class="btn btn-success" onclick="openModal('approveSekretarisModal')"><i class="fas fa-check"></i> Setujui (Sekretaris)</button>
+        <button class="btn btn-success" onclick="openModal('approveSekretarisModal')"><i class="fas fa-check"></i>
+            Setujui (Sekretaris)</button>
         <button class="btn btn-danger" onclick="openModal('rejectModal')"><i class="fas fa-times"></i> Tolak</button>
         {% endif %}
 
@@ -87,12 +88,28 @@
             </div>
             <div>
                 <div class="detail-field">
-                    <div class="field-label">Tujuan</div>
-                    <div class="field-value">{{ surat.tujuan|default:"-" }}</div>
+                    <div class="field-label">Penerima</div>
+                    <div class="field-value">{{ surat.penerima|default:"-" }}</div>
                 </div>
                 <div class="detail-field">
                     <div class="field-label">Pengirim</div>
                     <div class="field-value">{{ surat.pengirim|default:"-" }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Sub Bagian</div>
+                    <div class="field-value">{{ surat.sub_bagian|default:"-" }}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="field-label">Tujuan Surat</div>
+                    <div class="field-value">
+                        {% if surat.tujuan_surat == 'internal' %}
+                        <span class="badge info">Internal</span>
+                        {% elif surat.tujuan_surat == 'external' %}
+                        <span class="badge warning">External</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="detail-field">
                     <div class="field-label">Dibuat oleh</div>

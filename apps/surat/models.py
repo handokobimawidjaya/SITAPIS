@@ -52,15 +52,30 @@ class Surat(models.Model):
     )
     perihal = models.CharField(max_length=255, verbose_name='Perihal')
     tanggal = models.DateField(verbose_name='Tanggal Surat')
-    tujuan = models.CharField(
+    penerima = models.CharField(
         max_length=255,
         blank=True,
-        verbose_name='Tujuan',
+        verbose_name='Penerima',
     )
     pengirim = models.CharField(
         max_length=255,
         blank=True,
         verbose_name='Pengirim',
+    )
+    sub_bagian = models.ForeignKey(
+        'master.SubBagian',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Sub Bagian',
+        help_text='Sub Bagian yang terkait',
+    )
+    tujuan_surat = models.CharField(
+        max_length=20,
+        choices=[('internal', 'Internal'), ('external', 'External')],
+        default='external',
+        verbose_name='Tujuan Surat',
+        help_text='Tujuan surat: Internal atau External',
     )
     kategori_surat = models.CharField(
         max_length=20,

@@ -14,18 +14,18 @@
     <div class="card-body">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
             {% if form.errors %}
             <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
                 <strong>Perhatian!</strong> Terdapat kesalahan pengisian form:
                 <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
                     {% for field in form %}
-                        {% for error in field.errors %}
-                            <li>{{ field.label }}: {{ error }}</li>
-                        {% endfor %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
                     {% endfor %}
                     {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
+                    <li>{{ error }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -34,7 +34,7 @@
             {% for field in form %}
             <div class="form-group">
                 <label class="form-label" for="{{ field.id_for_label }}">
-                    {{ field.label }} 
+                    {{ field.label }}
                     {% if field.field.required %}<span style="color:var(--clr-danger);">*</span>{% endif %}
                 </label>
                 {{ field }}
@@ -45,9 +45,11 @@
             <!-- Attachment field - only show when status is Inprogress -->
             {% if surat and surat.status == 'inprogress' %}
             <div class="form-group">
-                <label class="form-label"><i class="fas fa-paperclip"></i> Lampiran (Scan PDF) <span style="color:var(--clr-danger);">*</span></label>
+                <label class="form-label"><i class="fas fa-paperclip"></i> Lampiran (Scan PDF) <span
+                        style="color:var(--clr-danger);">*</span></label>
                 <input type="file" name="attachments" class="form-input" multiple accept=".pdf" required>
-                <div class="form-help">Wajib upload minimal 1 file PDF untuk menyelesaikan persetujuan dan verifikasi surat.</div>
+                <div class="form-help">Wajib upload minimal 1 file PDF untuk menyelesaikan persetujuan dan verifikasi
+                    surat.</div>
             </div>
             {% endif %}
 
@@ -57,11 +59,12 @@
                 <label class="form-label">File Terlampir Saat Ini:</label>
                 <ul class="attachment-list" style="list-style:none; padding:0; margin:0;">
                     {% for att in attachments %}
-                    <li class="attachment-item" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                    <li class="attachment-item"
+                        style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
                         <i class="fas fa-file-pdf" style="color:var(--clr-danger);"></i>
                         <a href="{{ att.file.url }}" target="_blank" style="font-weight:500;">{{ att.filename }}</a>
                         {% if surat.is_editable %}
-                            <!-- Since we can't easily inline delete here safely without a nested form or JS, we rely on detail page for deletion -->
+                        <!-- Since we can't easily inline delete here safely without a nested form or JS, we rely on detail page for deletion -->
                         {% endif %}
                     </li>
                     {% endfor %}
@@ -83,6 +86,26 @@
         var tanggalField = document.querySelector('[name="tanggal"]');
         var notesField = document.querySelector('[name="notes"]');
         var notesGroup = notesField ? notesField.closest('.form-group') : null;
+
+        // Sub Bagian conditional logic
+        var tujuanSuratField = document.getElementById('id_tujuan_surat');
+        var subBagianField = document.getElementById('id_sub_bagian');
+        var subBagianGroup = subBagianField ? subBagianField.closest('.form-group') : null;
+
+        function updateSubBagianVisibility() {
+            if (tujuanSuratField && subBagianField && subBagianGroup) {
+                if (tujuanSuratField.value === 'internal') {
+                    // Show Sub Bagian and make it required
+                    subBagianGroup.style.display = '';
+                    subBagianField.setAttribute('required', 'required');
+                } else {
+                    // Hide Sub Bagian and remove required
+                    subBagianGroup.style.display = 'none';
+                    subBagianField.removeAttribute('required');
+                    subBagianField.value = ''; // Clear selection
+                }
+            }
+        }
 
         function updateFormFields() {
             if (kategoriField && tanggalField) {
@@ -115,6 +138,13 @@
             kategoriField.addEventListener('change', updateFormFields);
             // Initial check on page load
             updateFormFields();
+        }
+
+        // Sub Bagian logic
+        if (tujuanSuratField) {
+            tujuanSuratField.addEventListener('change', updateSubBagianVisibility);
+            // Initial check on page load
+            updateSubBagianVisibility();
         }
     })();
 </script>

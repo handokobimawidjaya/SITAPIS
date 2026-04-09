@@ -35,6 +35,9 @@
                     <th>Nomor Surat</th>
                     <th>Perihal</th>
                     <th>Kategori</th>
+                    <th>Penerima</th>
+                    <th>Sub Bagian</th>
+                    <th>Tujuan</th>
                     <th>Tanggal</th>
                     <th>Status</th>
                     <th>Dibuat oleh</th>
@@ -48,6 +51,17 @@
                     </td>
                     <td>{{ s.perihal|truncatechars:50 }}</td>
                     <td><span style="color:var(--clr-text-muted);">{{ s.jenis_naskah.nama|default:"-" }}</span></td>
+                    <td>{{ s.penerima|default:"-" }}</td>
+                    <td>{{ s.sub_bagian|default:"-" }}</td>
+                    <td>
+                        {% if s.tujuan_surat == 'internal' %}
+                        <span class="badge info">Internal</span>
+                        {% elif s.tujuan_surat == 'external' %}
+                        <span class="badge warning">External</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
                     <td>{{ s.tanggal|date:"d M Y" }}</td>
                     <td><span class="badge {{ s.status_color }}">{{ s.get_status_display }}</span></td>
                     <td>{{ s.created_by.get_full_name|default:s.created_by.username }}</td>
@@ -62,7 +76,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7">
+                    <td colspan="10">
                         <div class="empty-state">
                             <i class="fas fa-folder-open"></i>
                             <h3>Belum ada surat</h3>

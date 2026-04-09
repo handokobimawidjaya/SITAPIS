@@ -11,11 +11,13 @@ from apps.accounts.decorators import role_required
 from .forms import (
     JenisNaskahDinasForm,
     KlasifikasiArsipForm,
+    SubBagianForm,
     UnitKerjaForm,
 )
 from .models import (
     JenisNaskahDinas,
     KlasifikasiArsip,
+    SubBagian,
     UnitKerja,
 )
 
@@ -209,4 +211,53 @@ def unit_kerja_delete(request, pk):
         request, UnitKerja, pk,
         'master:unit_kerja_list',
         'Unit Kerja berhasil dihapus.',
+    )
+
+
+# ── Sub Bagian ──────────────────────────────────────────────────────────
+
+@login_required
+@role_required('admin', 'sekretaris')
+def sub_bagian_list(request):
+    """List all Sub Bagian."""
+    return _generic_list(
+        request, SubBagian,
+        'master/sub_bagian_list.html',
+    )
+
+
+@login_required
+@role_required('admin')
+def sub_bagian_create(request):
+    """Create a new Sub Bagian."""
+    return _generic_create(
+        request, SubBagianForm,
+        'master/sub_bagian_form.html',
+        'master:sub_bagian_list',
+        'Tambah Sub Bagian',
+        'Sub Bagian berhasil dibuat.',
+    )
+
+
+@login_required
+@role_required('admin')
+def sub_bagian_update(request, pk):
+    """Update an existing Sub Bagian."""
+    return _generic_update(
+        request, SubBagian, SubBagianForm,
+        'master/sub_bagian_form.html',
+        'master:sub_bagian_list', pk,
+        'Edit Sub Bagian',
+        'Sub Bagian berhasil diperbarui.',
+    )
+
+
+@login_required
+@role_required('admin')
+def sub_bagian_delete(request, pk):
+    """Delete a Sub Bagian."""
+    return _generic_delete(
+        request, SubBagian, pk,
+        'master:sub_bagian_list',
+        'Sub Bagian berhasil dihapus.',
     )

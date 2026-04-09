@@ -77,13 +77,12 @@ def import_klasifikasi_arsip():
     Import data dari 'Data Master Klasifikasi Arsip SITAPIS.xlsx' ke KlasifikasiArsip.
 
     File berisi: Kode Klasifikasi | Keterangan | Status
-    Mendukung struktur hierarki (PP → PP.01 → PP.01.1)
     """
-    print("\n[Klasifikasi Arsip] Mulai pre-processing...")
-    
+    print("\n[Klasifikasi Arsip] Mulai import...")
+
     # 1. Baca data Excel
     filepath = 'document_requirement/Data Master Klasifikasi Arsip SITAPIS.xlsx'
-    
+
     print(f"\n📄 Import Klasifikasi Arsip dari: {filepath}")
     wb = openpyxl.load_workbook(filepath)
     ws = wb.active
@@ -102,34 +101,12 @@ def import_klasifikasi_arsip():
             continue
 
         try:
-            # Determine parent for hierarchical structure
-            parent = None
-            if '.' in str(kode):
-                parts = str(kode).split('.')
-                if len(parts) == 2:
-                    parent_code = parts[0]
-                else:
-                    parent_code = '.'.join(parts[:-1])
-
-                try:
-                    parent = KlasifikasiArsip.objects.get(kode=parent_code)
-                except KlasifikasiArsip.DoesNotExist:
-                    parent = None
-
-            # Determine jenis based on code pattern
-            jenis = 'substantif'
-            code_prefix = str(kode).split('.')[0]
-            if code_prefix in ['UM', 'KEU', 'BMN', 'PEG', 'HUM', 'HUK', 'REN', 'WAS']:
-                jenis = 'fasilitatif'
-
             is_active = str(status_str).strip().lower() == 'aktif'
 
             obj, created_flag = KlasifikasiArsip.objects.update_or_create(
                 kode=str(kode).strip(),
                 defaults={
                     'nama': str(nama).strip(),
-                    'jenis': jenis,
-                    'parent': parent,
                     'is_active': is_active,
                     'deskripsi': '',
                 }
@@ -143,24 +120,6 @@ def import_klasifikasi_arsip():
         except Exception as e:
             errors += 1
             print(f"  ✗ ERROR row {i} ({kode}): {e}")
-
-    # Second pass: Update parent relationships
-    print("  Updating parent relationships...")
-    for item in KlasifikasiArsip.objects.all():
-        if '.' in str(item.kode):
-            parts = str(item.kode).split('.')
-            if len(parts) == 2:
-                parent_code = parts[0]
-            else:
-                parent_code = '.'.join(parts[:-1])
-            
-            try:
-                parent = KlasifikasiArsip.objects.get(kode=parent_code)
-                if item.parent_id != parent.id:
-                    item.parent = parent
-                    item.save(update_fields=['parent'])
-            except KlasifikasiArsip.DoesNotExist:
-                pass
 
     print(f"  ✓ Klasifikasi Arsip: {created} dibuat, {updated} diperbarui, {errors} error")
     return created, updated, errors

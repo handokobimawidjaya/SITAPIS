@@ -121,6 +121,34 @@ class UnitKerja(models.Model):
         return f"{self.kode} - {self.nama}"
 
 
+class SubBagian(models.Model):
+    """
+    Sub Bagian (Sub-division) for user assignment.
+
+    Used to categorize users into specific sub-divisions
+    within the organization.
+    """
+
+    kode = models.CharField(
+        max_length=10,
+        unique=True,
+        verbose_name='Kode',
+        help_text='Contoh: 1, 2, 3, 4',
+    )
+    nama = models.CharField(max_length=255, verbose_name='Nama')
+    is_active = models.BooleanField(default=True, verbose_name='Aktif')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Sub Bagian'
+        verbose_name_plural = 'Sub Bagian'
+        ordering = ['kode']
+
+    def __str__(self):
+        return f"{self.kode} - {self.nama}"
+
+
 class Wilayah(models.Model):
     """
     Region hierarchy: Provinsi → Kabupaten/Kota.
@@ -172,8 +200,9 @@ class NomorSuratCounter(models.Model):
     Sequential counter for letter numbering.
 
     Tracks the last-used number per unique combination of
-    (jenis_naskah, satker, tahun). Resets automatically each year
-    when a new year's first letter is generated.
+    (jenis_naskah, satker, tahun) for external letters, or
+    (jenis_naskah, satker, sub_bagian, tahun) for internal letters.
+    Resets automatically each year when a new year's first letter is generated.
     """
 
     jenis_naskah = models.ForeignKey(
@@ -189,6 +218,14 @@ class NomorSuratCounter(models.Model):
         verbose_name='Satuan Kerja',
         help_text='Null = KPU Pusat',
     )
+    sub_bagian = models.ForeignKey(
+        'SubBagian',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name='Sub Bagian',
+        help_text='Null = External letter',
+    )
     tahun = models.PositiveIntegerField(verbose_name='Tahun')
     last_number = models.PositiveIntegerField(
         default=0,
@@ -198,7 +235,7 @@ class NomorSuratCounter(models.Model):
     class Meta:
         verbose_name = 'Counter Nomor Surat'
         verbose_name_plural = 'Counter Nomor Surat'
-        unique_together = [['jenis_naskah', 'satker', 'tahun']]
+        unique_together = [['jenis_naskah', 'satker', 'sub_bagian', 'tahun']]
         ordering = ['-tahun', 'jenis_naskah']
 
     def __str__(self):

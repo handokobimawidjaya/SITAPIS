@@ -97,7 +97,7 @@ def surat_list(request):
 def surat_create(request):
     """Create a new document with auto-generated number."""
     # Set default pengirim to user's satker name with KPU prefix
-    initial = {}
+    initial = {'tujuan_surat': 'external'}
     if request.user.satker:
         initial['pengirim'] = 'KPU ' + request.user.satker.nama
 
@@ -105,8 +105,14 @@ def surat_create(request):
     if request.method == 'POST' and form.is_valid():
         surat = form.save(commit=False)
         surat.created_by = request.user
+        
+        # Generate nomor surat with tujuan_surat and sub_bagian
         surat.nomor_surat = generate_nomor_surat(
-            surat.jenis_naskah, surat.klasifikasi, request.user,
+            surat.jenis_naskah,
+            surat.klasifikasi,
+            request.user,
+            tujuan_surat=surat.tujuan_surat,
+            sub_bagian=surat.sub_bagian if surat.tujuan_surat == 'internal' else None,
         )
         surat.save()
 

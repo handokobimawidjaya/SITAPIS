@@ -30,6 +30,14 @@ class User(AbstractUser):
         verbose_name='Satuan Kerja',
         help_text='Satuan Kerja tempat user bertugas',
     )
+    sub_bagian = models.ForeignKey(
+        'master.SubBagian',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Sub Bagian',
+        help_text='Sub Bagian tempat user bertugas',
+    )
     phone = models.CharField(max_length=20, blank=True, verbose_name='Telepon')
     avatar = models.ImageField(
         upload_to='avatars/',

@@ -24,4 +24,9 @@ urlpatterns = [
     path('unit-kerja/create/', views.unit_kerja_create, name='unit_kerja_create'),
     path('unit-kerja/<int:pk>/edit/', views.unit_kerja_update, name='unit_kerja_update'),
     path('unit-kerja/<int:pk>/delete/', views.unit_kerja_delete, name='unit_kerja_delete'),
+    # Sub Bagian
+    path('sub-bagian/', views.sub_bagian_list, name='sub_bagian_list'),
+    path('sub-bagian/create/', views.sub_bagian_create, name='sub_bagian_create'),
+    path('sub-bagian/<int:pk>/edit/', views.sub_bagian_update, name='sub_bagian_update'),
+    path('sub-bagian/<int:pk>/delete/', views.sub_bagian_delete, name='sub_bagian_delete'),
 ]
