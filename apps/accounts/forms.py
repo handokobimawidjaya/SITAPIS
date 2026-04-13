@@ -114,8 +114,12 @@ class UserForm(forms.ModelForm):
         
         # If either password is provided, they must match
         if p1 or p2:
-            if p1 != p2:
-                raise forms.ValidationError('Password tidak cocok.')
+            if p1 and not p2:
+                self.add_error('password2', 'Konfirmasi Password Baru wajib diisi jika Anda mengisi Password Baru.')
+            elif not p1 and p2:
+                self.add_error('password1', 'Password Baru wajib diisi jika Anda mengisi Konfirmasi Password.')
+            elif p1 != p2:
+                self.add_error('password2', 'Password tidak cocok.')
         
         return cleaned
 

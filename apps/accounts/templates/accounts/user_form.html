@@ -12,12 +12,17 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% for field in form %}
-            <div class="form-group">
+            <div class="form-group" {% if 'password' in field.name %}style="position: relative;"{% endif %}>
                 <label for="{{ field.id_for_label }}">
                     {{ field.label }}
                     {% if field.field.required %}<span style="color: var(--clr-danger);">*</span>{% endif %}
                 </label>
                 {{ field }}
+                {% if 'password' in field.name %}
+                <span class="password-toggle" onclick="togglePassword('{{ field.id_for_label }}', 'toggleIcon_{{ field.name }}')" style="position: absolute; right: 15px; top: 38px; cursor: pointer; color: #6f7f90; z-index: 10;">
+                    <i class="far fa-eye" id="toggleIcon_{{ field.name }}"></i>
+                </span>
+                {% endif %}
                 {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
                 {% for error in field.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
             </div>
@@ -36,4 +41,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleIcon = document.getElementById(iconId);
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+</script>
 {% endblock %}
