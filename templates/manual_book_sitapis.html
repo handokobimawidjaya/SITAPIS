@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manual Book SITAPIS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 40px auto;
+            padding: 0 20px;
+            max-width: 800px;
+            background-color: #fcfcfc;
+        }
+
+        .container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a426b;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #2c4a6b;
+            margin-top: 35px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h3 {
+            color: #333;
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ol,
+        ul {
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #111;
+        }
+
+        .note {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>BUKU PANDUAN PENGGUNA SITAPIS</h1>
+        <div class="subtitle">Sistem Informasi Tata Administrasi Penomoran dan Inventarisasi Surat</div>
+
+        <h2>BAB 1: PENDAHULUAN</h2>
+        <h3>1.1 Deskripsi Aplikasi</h3>
+        <p><strong>SITAPIS</strong> adalah platform administrasi digital yang dirancang khusus untuk memfasilitasi tata
+            naskah dinas, penomoran otomatis, dan pengarsipan surat-menyurat di lingkungan instansi (merujuk pada tata
+            naskah dinas KPU). Aplikasi ini meminimalisir kesalahan penomoran manual dan merapikan tumpukan dokumen
+            fisik menjadi arsip digital yang mudah ditelusuri.</p>
+
+        <h3>1.2 Hak Akses (Role)</h3>
+        <p>SITAPIS memilah pengguna ke dalam 4 tingkatan hak akses:</p>
+        <ol>
+            <li><strong>Admin</strong>: Pihak IT atau Administrator yang bertugas mengelola Data Master (menambah
+                pengguna, klasifikasi arsip, dan referensi sistem).</li>
+            <li><strong>Pegawai / Staff</strong>: Pengguna yang bertugas membuat draft/rancangan surat, mendaftarkan
+                surat masuk, dan mengunggah dokumen fisik.</li>
+            <li><strong>Kasubbag (Kepala Sub Bagian)</strong>: Pihak yang berwenang meninjau dan memberikan validasi
+                pertama (Pemeriksaan) terhadap draf surat yang dibuat oleh stafnya.</li>
+            <li><strong>Sekretaris (Pimpinan)</strong>: Pihak yang memberikan persetujuan akhir (Final Approval) agar
+                surat mendapatkan <em>Nomor Surat Resmi</em> secara otomatis.</li>
+        </ol>
+
+        <h2>BAB 2: PANDUAN AKSES & PROFIL</h2>
+        <h3>2.1 Login ke dalam Sistem</h3>
+        <ol>
+            <li>Buka browser (disarankan Google Chrome).</li>
+            <li>Akses alamat URL SITAPIS yang telah disediakan.</li>
+            <li>Masukkan <strong>Username</strong> (NIP untuk pegawai) dan <strong>Password</strong> yang telah
+                didaftarkan.</li>
+            <li>(Opsional) Anda dapat mengklik <strong>ikon mata (👁)</strong> pada kolom password untuk menampikan
+                karakter yang Anda ketik.</li>
+            <li>Klik tombol <strong>Masuk</strong>. Jika berhasil, Anda akan dialihkan ke halaman
+                <strong>Dashboard</strong>.</li>
+        </ol>
+
+        <h3>2.2 Mengelola Profil Pengguna</h3>
+        <ol>
+            <li>Klik nama Anda pada pojok kanan atas layar navigasi.</li>
+            <li>Pilih menu <strong>Profil Saya</strong>.</li>
+            <li>Di halaman ini, Anda dapat mengubah Nama, Email, Nomor Telepon, dan Foto Profil (Avatar).</li>
+            <li>Klik <strong>Simpan</strong> untuk memperbarui data.</li>
+        </ol>
+
+        <h2>BAB 3: MODUL DATA MASTER (KHUSUS ADMIN)</h2>
+        <p>Modul ini menu wajib yang harus diisi sejak awal peluncuran web. Terdapat di sidebar kiri bawah kategori
+            <strong>Master Data</strong>.</p>
+
+        <h3>3.1 Manajemen Pengguna</h3>
+        <ul>
+            <li><strong>Melihat User</strong>: Klik <em>Kelola Pengguna</em>. Tabel akan menampilkan daftar akun.</li>
+            <li><strong>Tambah User</strong>: Klik tombol <strong>Tambah</strong>. Isi biodata lengkap, tentukan Role,
+                Satuan Kerja, dan isi Password pada kolom yang disediakan.</li>
+            <li><strong>Edit/Reset Password User</strong>: Klik tombol Edit (ikon pensil). Untuk mengganti password lama
+                pengguna yang lupa, isi bagian <em>Password Baru</em>.</li>
+        </ul>
+
+        <h3>3.2 Klasifikasi Arsip (Kode Surat)</h3>
+        <p>Kode Klasifikasi adalah fondasi dari pembuatan nomor surat. Pastikan hierarki dari Induk hingga Subbagian
+            tersusun rapi. Anda juga dapat menggunakan perintah SQL Import untuk memasukkan ratusan klasifikasi KPU
+            sekaligus via database.</p>
+
+        <h3>3.3 Jenis Naskah Dinas & Unit Kerja</h3>
+        <p>Masing-masing jenis naskah (seperti Surat Tugas, Nota Dinas) perlu didaftarkan agar mesin Auto-Numbering
+            mengenali kodenya (misal: ST, ND). Aktifkan kode yang masih relevan dengan mencentang kotak <em>Aktif</em>.
+        </p>
+
+        <h2>BAB 4: MODUL SURAT / NASKAH DINAS</h2>
+        <p>SITAPIS membagi surat menjadi 2 lorong utama: Surat Masuk dan Pembuatan Surat (Keluar/Internal).</p>
+
+        <h3>4.1 Registrasi Surat Masuk</h3>
+        <ol>
+            <li>Klik <strong>Surat Masuk > Tambah Baru</strong>.</li>
+            <li>Isi Nomor Surat asli dari instansi/orang pengirim, dan tanggal asli surat tersebut.</li>
+            <li>Tulis perihal dan pengirim.</li>
+            <li><strong>Unggah (Upload)</strong> hasil scan dokumen asli dalam format file PDF atau Gambar.</li>
+            <li>Simpan.</li>
+        </ol>
+
+        <h3>4.2 Pembuatan Surat Baru (Draf Keluar/Internal)</h3>
+        <ol>
+            <li>Di bawah menu Sirkulasi Surat, klik <strong>Pembuatan Surat</strong> lalu klik <strong>Buat Surat
+                    Baru</strong>.</li>
+            <li>Isi informasi krusial seperti Jenis Naskah, Klasifikasi Arsip (mempengaruhi kode klasifikasi), dan
+                Perihal.</li>
+            <li>Pada tab Pihak Terkait, tentukan kepada siapa surat ini ditujukan.</li>
+            <li>Simpan Draf. <strong>Perhatian:</strong> Saat ini surat masih berstatus DRAFT dan Belum Memiliki Nomor
+                Keluar.</li>
+        </ol>
+
+        <h2>BAB 5: MODUL PERSETUJUAN (APPROVAL WORKFLOW)</h2>
+
+        <h3>5.1 Tahap Mengajukan Persetujuan (Oleh Staff)</h3>
+        <ol>
+            <li>Buka Draf Surat yang dibuat pada Bab 4.2.</li>
+            <li>Klik tombol merah <strong>Ajukan Persetujuan</strong>. Sistem akan mengirim surat ini ke alat dasbor
+                atasan.</li>
+        </ol>
+
+        <h3>5.2 Tahap Memproses Persetujuan (Oleh Pimpinan/Kasubbag)</h3>
+        <ol>
+            <li>Login sebagai Pimpinan. Pada Dashboard akan muncul kotak <em>Surat Perlu Persetujuan</em>.</li>
+            <li>Klik surat tersebut untuk meninjau secara vertikal.</li>
+            <li>Pilih <strong>Setuju / Approve</strong> jika draf benar, atau <strong>Tolak / Reject</strong> jika perlu
+                revisi (wajib menulis catatan revisi).</li>
+            <li><strong>Finalisasi:</strong> Apabila Sekretaris memilih Setuju, maka sistem akan menerbitkan
+                <strong>Nomor Surat Resmi secara otomatis</strong>.</li>
+        </ol>
+
+        <h2>BAB 6: PENCARIAN & LAPORAN (INVENTARISASI)</h2>
+
+        <h3>6.1 Melacak Surat</h3>
+        <p>Gunakan kolom <em>Search</em> di sisi atas tabel pada daftar Surat Masuk/Keluar. Pencarian berlangsung instan
+            dengan mengetik Nomor Surat, Nama Pengirim, atau Kutipan Perihal.</p>
+
+        <h3>6.2 Riwayat Perjalanan Surat</h3>
+        <p>SITAPIS merekam ketat setiap aktivitas (Audit Trail). Klik judul surat dan lihat di tab <strong>Riwayat
+                Persetujuan</strong> untuk melihat kapan sebuah surat diajukan, dikoreksi, dan disetujui beserta nama
+            orang dan Timestamp (stempel waktu).</p>
+
+        <div class="note">*Dokumen ini merupakan panduan dasar. Untuk kendala sistem/infrastruktur server, segera
+            hubungi Administrator IT Anda.</div>
+    </div>
+</body>
+
+</html>
