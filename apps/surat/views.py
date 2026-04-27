@@ -105,15 +105,23 @@ def surat_create(request):
     if request.method == 'POST' and form.is_valid():
         surat = form.save(commit=False)
         surat.created_by = request.user
+        # Auto-detect backdate
+        from django.utils import timezone
+        today = timezone.localtime().date()
         
-        # Generate nomor surat with tujuan_surat and sub_bagian
-        surat.nomor_surat = generate_nomor_surat(
-            surat.jenis_naskah,
-            surat.klasifikasi,
-            request.user,
-            tujuan_surat=surat.tujuan_surat,
-            sub_bagian=surat.sub_bagian if surat.tujuan_surat == 'internal' else None,
-        )
+        if surat.tanggal < today:
+            surat.is_backdate = True
+            from .services import generate_backdate_nomor_surat
+            surat.nomor_surat = generate_backdate_nomor_surat(surat, request.user)
+        else:
+            surat.nomor_surat = generate_nomor_surat(
+                surat.jenis_naskah,
+                surat.klasifikasi,
+                request.user,
+                tujuan_surat=surat.tujuan_surat,
+                sub_bagian=surat.sub_bagian if surat.tujuan_surat == 'internal' else None,
+            )
+            
         surat.save()
 
         messages.success(

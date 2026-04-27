@@ -88,3 +88,111 @@ def generate_nomor_surat(jenis_naskah, klasifikasi, user, tujuan_surat='external
     parts.append(str(current_year))
 
     return '/'.join(parts)
+
+
+@transaction.atomic
+def generate_backdate_nomor_surat(surat, user):
+    """
+    Generate letter number specifically for backdate documents.
+    Logic Priority:
+    1. Re-use lowest Cancelled/Rejected number on the same date.
+    2. Add alphabetical suffix (e.g. .a, .b) to the max number on that date.
+    3. If no letter on that exact date, find max number before that date.
+    """
+    from apps.surat.models import Surat
+
+    satker = user.satker if hasattr(user, 'satker') else None
+    satker_kode = satker.kode if satker else ''
+
+    # Build the suffix format mapping
+    parts_tail = [f"{surat.klasifikasi.kode}-{surat.jenis_naskah.kode}"]
+    if satker_kode:
+        parts_tail.append(satker_kode)
+    if surat.tujuan_surat == 'internal' and surat.sub_bagian:
+        parts_tail.append(surat.sub_bagian.kode)
+    parts_tail.append(str(surat.tanggal.year))
+
+    tail_str = '/' + '/'.join(parts_tail)
+
+    base_qs = Surat.objects.filter(
+        tanggal=surat.tanggal,
+        jenis_naskah=surat.jenis_naskah,
+        klasifikasi=surat.klasifikasi,
+        sub_bagian=surat.sub_bagian,
+        tujuan_surat=surat.tujuan_surat,
+    )
+    if surat.pk:
+        base_qs = base_qs.exclude(pk=surat.pk)
+
+    def get_prefix(nomor):
+        try:
+            return nomor.split('/')[0]
+        except:
+            return '0'
+
+    def prefix_sort_key(p):
+        parts = p.split('.')
+        try:
+            num = int(parts[0])
+        except ValueError:
+            num = 0
+        return (num, parts[1] if len(parts) > 1 else '')
+
+    # Prioritas 1: Cari yang tercancel di hari yang sama
+    rejected_surat = base_qs.filter(status=Surat.Status.REJECTED)
+    rejected_prefixes = [get_prefix(rs.nomor_surat) for rs in rejected_surat]
+
+    if rejected_prefixes:
+        rejected_prefixes.sort(key=prefix_sort_key)
+        return f"{rejected_prefixes[0]}{tail_str}"
+
+    # Prioritas 2: Angka maksimal + suffix di hari yang sama
+    all_prefixes = [get_prefix(s.nomor_surat) for s in base_qs]
+
+    if not all_prefixes:
+        # Jika gak ada surat di hari tsb, cari yg sebelum tanggal tsb
+        previous_qs = Surat.objects.filter(
+            tanggal__lt=surat.tanggal,
+            tanggal__year=surat.tanggal.year,
+            jenis_naskah=surat.jenis_naskah,
+            klasifikasi=surat.klasifikasi,
+            sub_bagian=surat.sub_bagian,
+            tujuan_surat=surat.tujuan_surat,
+        )
+        if surat.pk:
+            previous_qs = previous_qs.exclude(pk=surat.pk)
+        
+        all_prefixes = [get_prefix(s.nomor_surat) for s in previous_qs]
+
+    if not all_prefixes:
+        return f"1{tail_str}"
+
+    all_prefixes.sort(key=prefix_sort_key)
+    max_prefix = all_prefixes[-1]
+
+    parts = max_prefix.split('.')
+    try:
+        base_num = int(parts[0])
+    except ValueError:
+        base_num = 0
+
+    # Collect existing suffixes for that exact base_num in the entire year to be safe against collisions
+    year_qs = Surat.objects.filter(
+        tanggal__year=surat.tanggal.year,
+        jenis_naskah=surat.jenis_naskah,
+        klasifikasi=surat.klasifikasi,
+        sub_bagian=surat.sub_bagian,
+        tujuan_surat=surat.tujuan_surat,
+    )
+    if surat.pk:
+        year_qs = year_qs.exclude(pk=surat.pk)
+    
+    year_prefixes = [get_prefix(s.nomor_surat) for s in year_qs]
+    existing_suffixes = [p.split('.')[1] for p in year_prefixes if p.startswith(str(base_num)+'.') and len(p.split('.')) > 1]
+
+    import string
+    for char in string.ascii_lowercase:
+        if char not in existing_suffixes:
+            return f"{base_num}.{char}{tail_str}"
+
+    return f"{base_num}.z{tail_str}"

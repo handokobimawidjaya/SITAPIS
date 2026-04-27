@@ -31,9 +31,14 @@ class Surat(models.Model):
 
     nomor_surat = models.CharField(
         max_length=100,
-        unique=True,
+        # unique=True dilepas untuk memperbolehkan backdate (duplicate number with rejected status)
         verbose_name='Nomor Surat',
         help_text='Nomor ter-generate otomatis saat surat dibuat',
+    )
+    is_backdate = models.BooleanField(
+        default=False,
+        verbose_name='Surat Backdate',
+        help_text='Menandakan surat di-backdate ke tanggal sebelumnya',
     )
     jenis_naskah = models.ForeignKey(
         'master.JenisNaskahDinas',
@@ -102,7 +107,7 @@ class Surat(models.Model):
     class Meta:
         verbose_name = 'Surat'
         verbose_name_plural = 'Surat'
-        ordering = ['-created_at']
+        ordering = ['-tanggal', '-created_at']
 
     def __str__(self):
         return f"{self.nomor_surat} — {self.perihal}"

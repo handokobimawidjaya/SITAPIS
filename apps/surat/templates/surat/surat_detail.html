@@ -12,6 +12,11 @@
             {{ surat.nomor_surat }}
             <span class="badge {{ surat.status_color }}">{{ surat.get_status_display }}</span>
         </h1>
+        {% if surat.is_backdate %}
+        <div style="margin-top: 12px; display: inline-block;">
+            <span class="badge danger" style="font-size: 0.85rem; padding: 6px 12px; background-color: var(--clr-danger); color: white; border-radius: 4px;"><i class="fas fa-exclamation-triangle"></i> SURAT INI MENGGUNAKAN TANGGAL BACKDATE / SISIPAN</span>
+        </div>
+        {% endif %}
     </div>
     <div style="display:flex;gap:8px;">
         {% if surat.status == 'draft' %}

@@ -4,7 +4,7 @@ Local development settings — PostgreSQL.
 
 from .base import *  # noqa: F401, F403
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
