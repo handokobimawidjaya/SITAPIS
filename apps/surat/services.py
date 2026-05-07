@@ -58,7 +58,7 @@ def generate_nomor_surat(jenis_naskah, klasifikasi, user, tujuan_surat='external
         .get_or_create(
             jenis_naskah=jenis_naskah,
             satker=satker,
-            sub_bagian=sub_bagian if tujuan_surat == 'internal' else None,
+            sub_bagian=None,
             tahun=current_year,
             defaults={'last_number': 0},
         )
@@ -196,3 +196,30 @@ def generate_backdate_nomor_surat(surat, user):
             return f"{base_num}.{char}{tail_str}"
 
     return f"{base_num}.z{tail_str}"
+
+def reformat_nomor_surat(surat):
+    """
+    Reformat an existing letter number string to reflect changes in
+    tujuan, klasifikasi, or sub_bagian, WITHOUT changing the base sequence number.
+    Example: 136/RT.01.2-SD/1807/2026 -> 136/PK.01-SD/1807/1/2026
+    """
+    try:
+        nomor_part = surat.nomor_surat.split('/')[0]
+    except:
+        nomor_part = "0"
+        
+    satker = surat.created_by.satker if hasattr(surat.created_by, 'satker') else None
+    satker_kode = satker.kode if satker else ''
+    
+    parts = [nomor_part]
+    parts.append(f"{surat.klasifikasi.kode}-{surat.jenis_naskah.kode}")
+    
+    if satker_kode:
+        parts.append(satker_kode)
+        
+    if surat.tujuan_surat == 'internal' and surat.sub_bagian:
+        parts.append(surat.sub_bagian.kode)
+        
+    parts.append(str(surat.tanggal.year))
+    
+    return '/'.join(parts)

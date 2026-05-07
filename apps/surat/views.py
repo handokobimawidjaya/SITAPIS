@@ -31,21 +31,23 @@ def dashboard(request):
     ).order_by('-created_at')[:10]
 
     # Monthly chart data (last 12 months)
-    from django.db.models.functions import TruncMonth
-    monthly_data = (
-        Surat.objects
-        .annotate(month=TruncMonth('created_at'))
-        .values('month')
-        .annotate(count=Count('id'))
-        .order_by('month')
-    )[:12]
+    # Diubah ke pemrosesan Python murni untuk menghindari error CONVERT_TZ di MySQL
+    from collections import defaultdict
 
-    chart_labels = [
-        item['month'].strftime('%b %Y') for item in monthly_data
-    ] if monthly_data else []
-    chart_values = [
-        item['count'] for item in monthly_data
-    ] if monthly_data else []
+    recent_surat_dates = Surat.objects.order_by('-created_at').values_list('created_at', flat=True)[:1000]
+    
+    month_counts = defaultdict(int)
+    for dt in recent_surat_dates:
+        if dt:
+            sort_key = dt.strftime('%Y-%m')
+            display_key = dt.strftime('%b %Y')
+            month_counts[(sort_key, display_key)] += 1
+
+    # Urutkan secara kronologis berdasarkan Year-Month dan ambil 12 bulan terakhir
+    sorted_months = sorted(month_counts.items())[-12:]
+
+    chart_labels = [item[0][1] for item in sorted_months]
+    chart_values = [item[1] for item in sorted_months]
 
     return render(request, 'dashboard.html', {
         'total_keluar': total_keluar,
@@ -163,9 +165,42 @@ def surat_update(request, pk):
         messages.error(request, 'Surat tidak dapat diedit karena status sudah '+ surat.get_status_display() +'.')
         return redirect('surat:surat_detail', pk=pk)
 
+    old_nomor = surat.nomor_surat
     form = SuratForm(request.POST or None, instance=surat)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        surat_obj = form.save(commit=False)
+        
+        # Periksa apakah ada perubahan pada field penomoran
+        numbering_fields = ['tujuan_surat', 'sub_bagian', 'klasifikasi', 'jenis_naskah', 'tanggal']
+        changed = any(field in form.changed_data for field in numbering_fields)
+        
+        if changed and surat_obj.status in [Surat.Status.DRAFT, Surat.Status.INPROGRESS]:
+            from django.utils import timezone
+            from .services import generate_nomor_surat, generate_backdate_nomor_surat, reformat_nomor_surat
+            
+            # Jika jenis_naskah atau tanggal berubah, kita WAJIB membuat nomor antrean baru
+            if 'jenis_naskah' in form.changed_data or 'tanggal' in form.changed_data:
+                today = timezone.localtime().date()
+                if surat_obj.tanggal < today:
+                    surat_obj.is_backdate = True
+                    surat_obj.nomor_surat = generate_backdate_nomor_surat(surat_obj, request.user)
+                else:
+                    surat_obj.is_backdate = False
+                    surat_obj.nomor_surat = generate_nomor_surat(
+                        surat_obj.jenis_naskah,
+                        surat_obj.klasifikasi,
+                        request.user,
+                        tujuan_surat=surat_obj.tujuan_surat,
+                        sub_bagian=surat_obj.sub_bagian if surat_obj.tujuan_surat == 'internal' else None,
+                    )
+            else:
+                # Jika hanya tujuan, sub_bagian, atau klasifikasi yang berubah, cukup atur ulang format string-nya (angka depan tetap)
+                surat_obj.nomor_surat = reformat_nomor_surat(surat_obj)
+            
+            if old_nomor != surat_obj.nomor_surat:
+                messages.info(request, f'Nomor surat otomatis berubah dari {old_nomor} menjadi {surat_obj.nomor_surat} mengikuti perubahan rincian surat.')
+
+        surat_obj.save()
         
         # Handle attachment upload when status is INPROGRESS
         if surat.status == Surat.Status.INPROGRESS:
